@@ -1,0 +1,35 @@
+---
+import Section from "../ui/Section.astro";
+import FaqAccordion from "../ui/FaqAccordion.astro";
+import Button from "../ui/Button.astro";
+import { getCollection } from "astro:content";
+import { sortFaq } from "../../lib/content";
+
+const faqs = sortFaq(await getCollection("faq")).slice(0, 4);
+const rendered = await Promise.all(
+  faqs.map(async (item) => {
+    const { Content } = await item.render();
+    return { item, Content };
+  }),
+);
+---
+
+<Section
+  eyebrow="FAQ"
+  title="Quick answers"
+  description="House calls, pricing, cancellations, and what to expect — the practical stuff, upfront."
+  class="bg-paper-soft"
+>
+  <div class="grid gap-3">
+    {
+      rendered.map(({ item, Content }) => (
+        <FaqAccordion question={item.data.question}>
+          <Content />
+        </FaqAccordion>
+      ))
+    }
+  </div>
+  <div class="mt-8">
+    <Button href="/faq" variant="secondary">View all FAQs</Button>
+  </div>
+</Section>

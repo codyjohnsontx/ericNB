@@ -1,0 +1,40 @@
+---
+import Section from "../ui/Section.astro";
+import ServiceCard from "../ui/ServiceCard.astro";
+import Button from "../ui/Button.astro";
+import { getCollection } from "astro:content";
+import { sortServices } from "../../lib/content";
+
+const services = sortServices(await getCollection("services"));
+const featured = services.filter((s) => s.data.featured).slice(0, 4);
+const list = featured.length ? featured : services.slice(0, 4);
+
+function houseCallLabel(h: (typeof services)[number]["data"]["houseCalls"]) {
+  if (h === "yes") return "House calls: available";
+  if (h === "limited") return "House calls: limited / ask";
+  return "House calls: studio-first";
+}
+---
+
+<Section
+  eyebrow="Services"
+  title="Massage therapy options built around your day"
+  description="Explore session types — from therapeutic and deep tissue work to prenatal support and in-home massage in New Braunfels."
+>
+  <div class="grid gap-4 md:grid-cols-2">
+    {
+      list.map((s) => (
+        <ServiceCard
+          href={`/services/${s.slug}`}
+          title={s.data.title}
+          description={s.data.description}
+          meta={houseCallLabel(s.data.houseCalls)}
+        />
+      ))
+    }
+  </div>
+  <div class="mt-8 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <p class="text-sm text-ink/70">Looking for mobile massage in New Braunfels? Start with the house call service page.</p>
+    <Button href="/services" variant="secondary">View all services</Button>
+  </div>
+</Section>

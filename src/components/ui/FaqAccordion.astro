@@ -1,0 +1,25 @@
+---
+interface Props {
+  question: string;
+}
+
+const { question } = Astro.props;
+const slug = question
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/(^-|-$)/g, "");
+---
+
+<details class="group rounded-xl border border-stone-200 bg-white px-4 py-3 shadow-sm open:shadow-card">
+  <summary
+    class="cursor-pointer list-none text-left text-sm font-semibold text-ink marker:hidden [&::-webkit-details-marker]:hidden"
+  >
+    <span class="flex items-start justify-between gap-3">
+      <span id={`faq-${slug}`}>{question}</span>
+      <span class="mt-0.5 text-sage transition group-open:rotate-45" aria-hidden="true">+</span>
+    </span>
+  </summary>
+  <div class="prose-local mt-3 border-t border-stone-100 pt-3 text-sm">
+    <slot />
+  </div>
+</details>

@@ -1,0 +1,43 @@
+---
+import Section from "../ui/Section.astro";
+import Button from "../ui/Button.astro";
+import { business } from "../../content/business";
+---
+
+<Section
+  eyebrow="About"
+  title="A licensed therapist, local to New Braunfels"
+  description="Premium in the ways that matter — skill, consistency, and respect for your time — without a luxury-spa performance."
+  class="bg-white"
+>
+  <div class="grid gap-8 lg:grid-cols-2 lg:items-center">
+    <div class="overflow-hidden rounded-3xl border border-stone-200 bg-paper-soft shadow-card">
+      <img
+        src="/images/therapist-placeholder.svg"
+        width="960"
+        height="1200"
+        alt="Placeholder image for therapist headshot"
+        class="h-full w-full object-cover"
+        loading="lazy"
+      />
+    </div>
+    <div>
+      <p class="text-lg font-semibold text-ink">{business.therapistName}</p>
+      <p class="mt-4 text-sm leading-relaxed text-ink/75">{business.aboutPreview.bio}</p>
+      <ul class="mt-6 space-y-2 text-sm text-ink/75">
+        <li>
+          <span class="font-semibold text-ink">Texas license on file</span> (updated in site content before launch)
+        </li>
+        <li>
+          <span class="font-semibold text-ink">Studio + house calls</span> when your space is a good fit
+        </li>
+        <li>
+          <span class="font-semibold text-ink">Straight talk</span> about what massage can and cannot do
+        </li>
+      </ul>
+      <div class="mt-8">
+        <Button href="/about" variant="secondary">{business.aboutPreview.cta}</Button>
+      </div>
+    </div>
+  </div>
+</Section>

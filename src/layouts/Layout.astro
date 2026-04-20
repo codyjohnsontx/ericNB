@@ -1,0 +1,38 @@
+---
+import "../styles/global.css";
+import SeoHead from "../components/seo/SeoHead.astro";
+import JsonLdLocalBusiness from "../components/seo/JsonLdLocalBusiness.astro";
+import SiteHeader from "../components/layout/SiteHeader.astro";
+import SiteFooter from "../components/layout/SiteFooter.astro";
+import StickyMobileCta from "../components/layout/StickyMobileCta.astro";
+import { business } from "../content/business";
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  ogImage?: string;
+  /** When true, includes LocalBusiness JSON-LD (use sparingly: home + contact). */
+  includeLocalJsonLd?: boolean;
+}
+
+const { title, description, path, ogImage, includeLocalJsonLd = false } = Astro.props;
+const fullTitle = title.includes(business.businessName) ? title : `${title} | ${business.businessName}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <SeoHead title={fullTitle} description={description} path={path} ogImage={ogImage} />
+    {includeLocalJsonLd ? <JsonLdLocalBusiness /> : null}
+  </head>
+  <body class="min-h-dvh">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <SiteHeader />
+    <main id="main" class="pb-28 lg:pb-0">
+      <slot />
+    </main>
+    <SiteFooter />
+    <StickyMobileCta />
+  </body>
+</html>

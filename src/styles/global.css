@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth text-ink antialiased;
+  }
+
+  body {
+    @apply bg-paper text-ink;
+  }
+
+  :focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-sage;
+  }
+
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-sage focus:px-4 focus:py-2 focus:text-white;
+  }
+}
+
+@layer components {
+  .prose-local {
+    @apply max-w-none text-ink/90;
+  }
+
+  .prose-local h2 {
+    @apply mt-10 text-2xl font-semibold tracking-tight text-ink first:mt-0;
+  }
+
+  .prose-local h3 {
+    @apply mt-8 text-lg font-semibold tracking-tight text-ink;
+  }
+
+  .prose-local p {
+    @apply mt-4 leading-relaxed;
+  }
+
+  .prose-local ul {
+    @apply mt-4 list-disc space-y-2 pl-5;
+  }
+
+  .prose-local a {
+    @apply font-medium text-sage underline decoration-sage/30 underline-offset-4 hover:decoration-sage;
+  }
+}

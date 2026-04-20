@@ -1,0 +1,19 @@
+---
+import Button from "../ui/Button.astro";
+import { business } from "../../content/business";
+---
+
+<div
+  class="fixed inset-x-0 bottom-0 z-50 border-t border-stone-200 bg-paper/95 p-3 backdrop-blur supports-[padding:max(0px)]:pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden"
+  role="region"
+  aria-label="Quick booking actions"
+>
+  <div class="mx-auto flex max-w-6xl gap-2">
+    <Button href={`sms:${business.phoneTel}`} variant="secondary" class="flex-1">
+      Text
+    </Button>
+    <Button href={business.bookingUrl} variant="primary" class="flex-1" rel="noopener noreferrer" target="_blank">
+      Book now
+    </Button>
+  </div>
+</div>

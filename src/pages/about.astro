@@ -1,0 +1,77 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Section from "../components/ui/Section.astro";
+import Button from "../components/ui/Button.astro";
+import { business } from "../content/business";
+
+const title = "About your New Braunfels massage therapist";
+const description =
+  "Credentials, Texas licensing placeholder, philosophy of care, and why Comal River Bodywork offers studio sessions and professional house calls.";
+---
+
+<Layout title={title} description={description} path="/about">
+  <Section
+    eyebrow="About"
+    title="Local massage therapy with a steady, professional pace"
+    description={business.tagline}
+    class="bg-gradient-to-b from-paper to-paper-soft"
+    titleTag="h1"
+  >
+    <div class="grid gap-8 lg:grid-cols-2 lg:items-start">
+      <div class="overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-card">
+        <img
+          src="/images/therapist-placeholder.svg"
+          width="960"
+          height="1200"
+          alt="Professional therapist portrait placeholder"
+          class="h-full w-full object-cover"
+          loading="lazy"
+        />
+      </div>
+      <div>
+        <h2 class="text-2xl font-semibold tracking-tight text-ink">{business.therapistName}</h2>
+        <p class="mt-2 text-sm font-medium text-ink/70">{business.texasLicenseNumber}</p>
+        <div class="mt-6 space-y-4 text-sm leading-relaxed text-ink/80">
+          {business.aboutPage.bioExtended.map((p) => <p>{p}</p>)}
+        </div>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Button href={business.bookingUrl} variant="primary" rel="noopener noreferrer" target="_blank">Book a session</Button>
+          <Button href="/services" variant="secondary">Explore services</Button>
+        </div>
+      </div>
+    </div>
+  </Section>
+
+  <Section eyebrow="Credentials" title="Training and professional standards" class="bg-white">
+    <ul class="grid gap-3 md:grid-cols-3">
+      {business.aboutPage.credentials.map((c) => (
+        <li class="rounded-2xl border border-stone-200 bg-paper-soft p-5 text-sm leading-relaxed text-ink/80">{c}</li>
+      ))}
+    </ul>
+  </Section>
+
+  <Section eyebrow="Approach" title="Philosophy of care" class="bg-paper-soft">
+    <p class="max-w-3xl text-sm leading-relaxed text-ink/80">{business.aboutPage.philosophy}</p>
+  </Section>
+
+  <Section eyebrow="Why we exist" title="Built for New Braunfels schedules" class="bg-white">
+    <p class="max-w-3xl text-sm leading-relaxed text-ink/80">{business.aboutPage.whyExists}</p>
+  </Section>
+
+  <Section eyebrow="Studio vs house calls" title="Two ways to receive care" class="bg-paper-soft">
+    <p class="max-w-3xl text-sm leading-relaxed text-ink/80">{business.aboutPage.studioVsHouseCall}</p>
+  </Section>
+
+  <Section class="bg-white pb-16">
+    <div class="rounded-3xl border border-stone-200 bg-gradient-to-b from-white to-paper-soft p-8 shadow-card">
+      <h2 class="text-2xl font-semibold tracking-tight text-ink">Ready to book?</h2>
+      <p class="mt-3 max-w-2xl text-sm leading-relaxed text-ink/75">
+        If you want therapeutic massage in New Braunfels without guesswork, start with a session type and we will adjust on the table.
+      </p>
+      <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+        <Button href={business.bookingUrl} variant="primary" rel="noopener noreferrer" target="_blank">Book online</Button>
+        <Button href={`tel:${business.phoneTel}`} variant="secondary">Text / Call</Button>
+      </div>
+    </div>
+  </Section>
+</Layout>

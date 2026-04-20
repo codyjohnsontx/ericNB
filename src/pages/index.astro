@@ -1,0 +1,30 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Hero from "../components/sections/Hero.astro";
+import TrustStrip from "../components/sections/TrustStrip.astro";
+import ServicesPreview from "../components/sections/ServicesPreview.astro";
+import PricingPreview from "../components/sections/PricingPreview.astro";
+import AboutPreview from "../components/sections/AboutPreview.astro";
+import ReviewsPreview from "../components/sections/ReviewsPreview.astro";
+import HowBookingWorks from "../components/sections/HowBookingWorks.astro";
+import FaqPreview from "../components/sections/FaqPreview.astro";
+import FinalCtaBand from "../components/sections/FinalCtaBand.astro";
+import { business } from "../content/business";
+---
+
+<Layout
+  title={business.seo.defaultTitle}
+  description={business.seo.defaultDescription}
+  path="/"
+  includeLocalJsonLd={true}
+>
+  <Hero />
+  <TrustStrip />
+  <ServicesPreview />
+  <PricingPreview />
+  <AboutPreview />
+  <ReviewsPreview />
+  <HowBookingWorks />
+  <FaqPreview />
+  <FinalCtaBand />
+</Layout>

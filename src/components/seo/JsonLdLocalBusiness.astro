@@ -1,0 +1,59 @@
+---
+import { business } from "../../content/business";
+
+const site = Astro.site ?? new URL(business.canonicalOrigin);
+const url = site.toString().replace(/\/$/, "");
+
+const priceRange = (() => {
+  const prices = business.sessionPricing.map((p) => p.studioPrice);
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  return `$${min}–$${max}`;
+})();
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "MassageTherapy",
+      "@id": `${url}/#business`,
+      name: business.businessName,
+      url,
+      image: new URL("/images/therapist-placeholder.svg", site).toString(),
+      telephone: business.phoneTel,
+      email: business.email,
+      priceRange,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: business.city,
+        addressRegion: business.state,
+        postalCode: business.postalCode,
+        addressCountry: business.country,
+        streetAddress: business.streetAddress,
+      },
+      areaServed: business.serviceAreas.map((name) => ({
+        "@type": "AdministrativeArea",
+        name,
+      })),
+      sameAs: [business.social.instagram, business.social.facebook].filter(Boolean),
+    },
+    {
+      "@type": "Person",
+      "@id": `${url}/#therapist`,
+      name: business.therapistName,
+      jobTitle: "Licensed Massage Therapist",
+      worksFor: { "@id": `${url}/#business` },
+      knowsAbout: [
+        "Therapeutic massage",
+        "Deep tissue massage",
+        "Prenatal massage",
+        "Sports massage",
+        "Relaxation massage",
+        "House call massage",
+      ],
+    },
+  ],
+};
+---
+
+<script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />

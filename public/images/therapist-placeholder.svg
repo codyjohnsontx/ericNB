@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="1200" viewBox="0 0 960 1200" role="img" aria-label="Therapist photo placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#f5f5f4"/>
+      <stop offset="100%" stop-color="#e7e5e4"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="1200" fill="url(#bg)"/>
+  <circle cx="480" cy="430" r="150" fill="#d6d3d1"/>
+  <path d="M240 980c60-200 420-200 480 0" fill="#d6d3d1"/>
+  <text x="480" y="1120" text-anchor="middle" font-family="ui-sans-serif, system-ui" font-size="28" fill="#57534e">
+    Replace with a professional headshot
+  </text>
+</svg>

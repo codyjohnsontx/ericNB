@@ -1,0 +1,38 @@
+---
+import { business } from "../../content/business";
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  ogImage?: string;
+}
+
+const { title, description, path, ogImage = "/images/og-placeholder.svg" } = Astro.props;
+
+const site = Astro.site ?? new URL(business.canonicalOrigin);
+const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+const canonicalUrl = new URL(normalizedPath, site).toString();
+const ogUrl = canonicalUrl;
+const absoluteOgImage = new URL(ogImage.startsWith("/") ? ogImage : `/${ogImage}`, site).toString();
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonicalUrl} />
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={ogUrl} />
+<meta property="og:image" content={absoluteOgImage} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={absoluteOgImage} />
+
+<meta name="theme-color" content="#fafaf9" />

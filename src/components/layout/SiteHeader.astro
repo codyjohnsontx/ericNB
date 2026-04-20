@@ -1,0 +1,76 @@
+---
+import Button from "../ui/Button.astro";
+import { business } from "../../content/business";
+
+const nav = [
+  { href: "/services", label: "Services" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/about", label: "About" },
+  { href: "/booking", label: "Booking" },
+  { href: "/testimonials", label: "Testimonials" },
+  { href: "/faq", label: "FAQ" },
+  { href: "/contact", label: "Contact" },
+  { href: "/blog", label: "Guides" },
+] as const;
+
+const pathname = Astro.url.pathname;
+---
+
+<header class="sticky top-0 z-40 border-b border-stone-200/80 bg-paper/90 backdrop-blur">
+  <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+    <a href="/" class="group flex min-w-0 flex-col">
+      <span class="truncate text-sm font-semibold tracking-tight text-ink group-hover:text-sage-dark">
+        {business.businessName}
+      </span>
+      <span class="truncate text-xs text-ink/60">Massage therapy in {business.city}, {business.state}</span>
+    </a>
+
+    <nav class="hidden items-center gap-1 lg:flex" aria-label="Primary">
+      {
+        nav.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              "rounded-md px-3 py-2 text-sm font-medium text-ink/75 hover:bg-paper-soft hover:text-ink",
+              pathname === item.href || pathname.startsWith(`${item.href}/`) ? "text-ink" : "",
+            ]}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+      <Button href={business.bookingUrl} variant="primary" class="ml-2" rel="noopener noreferrer" target="_blank">
+        Book now
+      </Button>
+    </nav>
+
+    <div class="flex items-center gap-2 lg:hidden">
+      <Button href={`tel:${business.phoneTel}`} variant="secondary" class="px-3 py-2 text-xs">
+        Call
+      </Button>
+      <Button href={business.bookingUrl} variant="primary" class="px-3 py-2 text-xs" rel="noopener noreferrer" target="_blank">
+        Book
+      </Button>
+    </div>
+  </div>
+
+  <div class="border-t border-stone-200/80 bg-paper lg:hidden">
+    <nav class="mx-auto flex max-w-6xl gap-2 overflow-x-auto px-4 py-2 sm:px-6" aria-label="Primary mobile">
+      {
+        nav.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              "whitespace-nowrap rounded-full border px-3 py-1 text-xs font-semibold",
+              pathname === item.href || pathname.startsWith(`${item.href}/`)
+                ? "border-sage/40 bg-white text-ink"
+                : "border-stone-200 bg-paper-soft text-ink/75",
+            ]}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>

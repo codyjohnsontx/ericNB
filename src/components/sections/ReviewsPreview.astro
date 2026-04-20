@@ -1,0 +1,32 @@
+---
+import Section from "../ui/Section.astro";
+import TestimonialCard from "../ui/TestimonialCard.astro";
+import Button from "../ui/Button.astro";
+import { getCollection } from "astro:content";
+import { sortTestimonials } from "../../lib/content";
+
+const testimonials = sortTestimonials(await getCollection("testimonials")).slice(0, 3);
+---
+
+<Section
+  eyebrow="Reviews"
+  title="What clients say"
+  description="Real feedback from people looking for dependable massage therapy in New Braunfels — not a scripted testimonial wall."
+  class="bg-paper-soft"
+>
+  <div class="grid gap-4 md:grid-cols-3">
+    {
+      testimonials.map((t) => (
+        <TestimonialCard
+          name={t.data.name}
+          quote={t.data.quote}
+          serviceType={t.data.serviceType}
+          tags={t.data.tags}
+        />
+      ))
+    }
+  </div>
+  <div class="mt-8">
+    <Button href="/testimonials" variant="secondary">Read more testimonials</Button>
+  </div>
+</Section>

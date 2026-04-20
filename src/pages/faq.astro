@@ -1,0 +1,47 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Section from "../components/ui/Section.astro";
+import FaqAccordion from "../components/ui/FaqAccordion.astro";
+import ContactCtaBand from "../components/ui/ContactCtaBand.astro";
+import { getCollection } from "astro:content";
+import { sortFaq } from "../lib/content";
+
+const faqs = sortFaq(await getCollection("faq"));
+const rendered = await Promise.all(
+  faqs.map(async (item) => {
+    const { Content } = await item.render();
+    return { item, Content };
+  }),
+);
+
+const title = "Massage therapy FAQ (New Braunfels)";
+const description =
+  "House-call logistics, service area, payments, what to wear, cancellations, prenatal questions, and booking help.";
+---
+
+<Layout title={title} description={description} path="/faq">
+  <Section
+    eyebrow="FAQ"
+    title="Practical answers — no fluff"
+    description="If you are researching mobile massage in New Braunfels, start here for logistics. If you do not see your question, text the studio number on the Contact page."
+    class="bg-gradient-to-b from-paper to-paper-soft"
+    titleTag="h1"
+  >
+    <div class="grid max-w-3xl gap-3">
+      {
+        rendered.map(({ item, Content }) => (
+          <FaqAccordion question={item.data.question}>
+            <p class="text-xs font-semibold text-clay-deep">{item.data.category}</p>
+            <div class="mt-2">
+              <Content />
+            </div>
+          </FaqAccordion>
+        ))
+      }
+    </div>
+  </Section>
+
+  <Section class="bg-white pb-16">
+    <ContactCtaBand title="Still unsure?" description="If you are deciding between studio and house call massage, tell us your address and space setup — we will help you pick the safer option." />
+  </Section>
+</Layout>

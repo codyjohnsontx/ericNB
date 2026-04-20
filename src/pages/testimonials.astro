@@ -1,0 +1,39 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Section from "../components/ui/Section.astro";
+import TestimonialCard from "../components/ui/TestimonialCard.astro";
+import ContactCtaBand from "../components/ui/ContactCtaBand.astro";
+import { getCollection } from "astro:content";
+import { sortTestimonials } from "../lib/content";
+
+const testimonials = sortTestimonials(await getCollection("testimonials"));
+
+const title = "Client testimonials";
+const description =
+  "Reviews from New Braunfels massage therapy clients — booking, communication, house calls, and session quality.";
+---
+
+<Layout title={title} description={description} path="/testimonials">
+  <Section
+    eyebrow="Testimonials"
+    title="What people say after their sessions"
+    description="These are written in a realistic placeholder voice — replace them with your own approved testimonials and attributions."
+    class="bg-gradient-to-b from-paper to-paper-soft"
+    titleTag="h1"
+  >
+    <div class="grid gap-4 md:grid-cols-2">
+      {testimonials.map((t) => (
+        <TestimonialCard
+          name={t.data.name}
+          quote={t.data.quote}
+          serviceType={t.data.serviceType}
+          tags={t.data.tags}
+        />
+      ))}
+    </div>
+  </Section>
+
+  <Section class="bg-white pb-16">
+    <ContactCtaBand />
+  </Section>
+</Layout>

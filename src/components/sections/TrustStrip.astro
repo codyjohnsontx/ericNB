@@ -1,0 +1,9 @@
+---
+import Section from "../ui/Section.astro";
+import TrustBadgeRow from "../ui/TrustBadgeRow.astro";
+import { business } from "../../content/business";
+---
+
+<Section class="bg-white py-10 sm:py-12">
+  <TrustBadgeRow items={business.trustHighlights} />
+</Section>

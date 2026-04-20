@@ -1,0 +1,35 @@
+---
+import type { Business } from "../../content/business";
+
+interface Props {
+  rows: Business["sessionPricing"];
+}
+
+const { rows } = Astro.props;
+---
+
+<div class="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-card">
+  <table class="min-w-full divide-y divide-stone-200 text-left text-sm">
+    <caption class="sr-only">Session pricing for studio and house call appointments</caption>
+    <thead class="bg-paper-soft text-xs font-semibold uppercase tracking-wide text-clay-deep">
+      <tr>
+        <th scope="col" class="px-4 py-3 sm:px-6">Session length</th>
+        <th scope="col" class="px-4 py-3 sm:px-6">Studio</th>
+        <th scope="col" class="px-4 py-3 sm:px-6">House call</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-stone-100">
+      {
+        rows.map((row) => (
+          <tr>
+            <th scope="row" class="px-4 py-4 font-semibold text-ink sm:px-6">
+              {row.minutes} minutes
+            </th>
+            <td class="px-4 py-4 text-ink/80 sm:px-6">${row.studioPrice}</td>
+            <td class="px-4 py-4 text-ink/80 sm:px-6">${row.houseCallPrice}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>

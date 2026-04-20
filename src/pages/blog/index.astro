@@ -1,0 +1,57 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Section from "../../components/ui/Section.astro";
+import Button from "../../components/ui/Button.astro";
+import { getCollection } from "astro:content";
+import { sortBlog } from "../../lib/content";
+
+const posts = sortBlog(await getCollection("blog"));
+
+const title = "Guides & articles";
+const description = "Short, practical guides about massage therapy in New Braunfels — booking, expectations, and local tips.";
+---
+
+<Layout title={title} description={description} path="/blog">
+  <Section
+    eyebrow="Blog"
+    title="Guides for clients (scaffold)"
+    description="This section is intentionally lightweight for v1 — add posts as markdown files under src/content/blog/."
+    class="bg-gradient-to-b from-paper to-paper-soft"
+    titleTag="h1"
+  >
+    <div class="grid gap-4">
+      {
+        posts.length ? (
+          posts.map((p) => (
+            <article class="rounded-2xl border border-stone-200 bg-white p-6 shadow-card">
+              <p class="text-xs font-semibold uppercase tracking-wide text-clay-deep">
+                {p.data.pubDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+              </p>
+              <h2 class="mt-2 text-xl font-semibold tracking-tight text-ink">
+                <a class="hover:text-sage-dark" href={`/blog/${p.slug}`}>
+                  {p.data.title}
+                </a>
+              </h2>
+              <p class="mt-2 text-sm leading-relaxed text-ink/75">{p.data.description}</p>
+              <div class="mt-4">
+                <Button href={`/blog/${p.slug}`} variant="secondary">Read</Button>
+              </div>
+            </article>
+          ))
+        ) : (
+          <p class="text-sm text-ink/70">No published posts yet.</p>
+        )
+      }
+    </div>
+  </Section>
+
+  <Section class="bg-white pb-16">
+    <div class="rounded-3xl border border-stone-200 bg-paper-soft p-8">
+      <h2 class="text-xl font-semibold text-ink">Want a specific topic?</h2>
+      <p class="mt-2 text-sm text-ink/75">Text the studio — client questions often become the best articles.</p>
+      <div class="mt-6">
+        <Button href="/contact" variant="primary">Contact</Button>
+      </div>
+    </div>
+  </Section>
+</Layout>

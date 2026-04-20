@@ -1,0 +1,48 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Section from "../../components/ui/Section.astro";
+import ServiceCard from "../../components/ui/ServiceCard.astro";
+import ContactCtaBand from "../../components/ui/ContactCtaBand.astro";
+import { getCollection } from "astro:content";
+import { sortServices } from "../../lib/content";
+import { business } from "../../content/business";
+
+const services = sortServices(await getCollection("services"));
+
+function houseCallLabel(h: (typeof services)[number]["data"]["houseCalls"]) {
+  if (h === "yes") return "House calls: available";
+  if (h === "limited") return "House calls: limited / ask";
+  return "House calls: studio-first";
+}
+
+const title = "Massage services in New Braunfels, TX";
+const description =
+  "Therapeutic massage, deep tissue, prenatal, sports, relaxation, and in-home massage options — with clear descriptions and straightforward booking.";
+---
+
+<Layout title={title} description={description} path="/services">
+  <Section
+    eyebrow="Services"
+    title="Massage therapy services tailored to your goals"
+    description="If you are comparing therapeutic massage in New Braunfels, start with the session type that best matches how you want to feel afterward — relief-focused, sports-aware, deeply relaxing, or at-home convenience."
+    class="bg-gradient-to-b from-paper to-paper-soft"
+    titleTag="h1"
+  >
+    <div class="grid gap-4 md:grid-cols-2">
+      {
+        services.map((s) => (
+          <ServiceCard
+            href={`/services/${s.slug}`}
+            title={s.data.title}
+            description={s.data.description}
+            meta={houseCallLabel(s.data.houseCalls)}
+          />
+        ))
+      }
+    </div>
+  </Section>
+
+  <Section class="bg-white pb-16" title="Questions before you book?" description={business.responseTimeNote}>
+    <ContactCtaBand title="Text a quick question — or book online" description="If you are unsure which service fits, send a short note about what you are feeling day-to-day. For scheduling, booking online is fastest." />
+  </Section>
+</Layout>
