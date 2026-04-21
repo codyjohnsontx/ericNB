@@ -14,8 +14,13 @@ existing Astro + Tailwind codebase. They match your conventions: frontmatter +
 | `src/components/sections/TrustStrip.astro` | `src/components/sections/TrustStrip.astro` | **REPLACE** |
 | `src/pages/booking.astro` | `src/pages/booking.astro` | **REPLACE** |
 
-No changes to `package.json`, `tailwind.config.mjs`, `astro.config.mjs`,
-`layouts/`, `content/`, or any other component.
+No changes to `package.json`, `tailwind.config.mjs`, `astro.config.mjs`, or
+`layouts/` as part of this handoff.
+
+The live site may still update **`src/content/business.ts`** (branding, NAP,
+`sessionPricing`, etc.) because those values feed the handoff components. Any
+other app changes (navigation, routes helper, a11y fixes) are outside the
+original four-file port but kept aligned with this design.
 
 ## What it does
 
@@ -89,3 +94,8 @@ for a future external scheduler link if needed.
 This folder’s `.astro` files mirror `src/` (same paths under `handoff/src/`).
 `tsconfig.json` **excludes** `handoff/` so `astro check` only type-checks the
 app under `src/`.
+
+The booking page passes wizard data through a hidden `#booking-init`
+`data-payload` JSON blob so the inline script stays type-clean. There is still **no
+server booking API** in this repo; confirm remains a client-side demo until you
+POST to Square/Acuity/your backend.

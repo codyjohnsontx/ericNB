@@ -1,8 +1,10 @@
 ---
 import Button from "../ui/Button.astro";
 import { business } from "../../content/business";
+import { BOOKING_PATH } from "../../lib/routes";
 
-if (Astro.url.pathname === "/booking") return null;
+const pathNorm = Astro.url.pathname.replace(/\/$/, "") || "/";
+if (pathNorm === BOOKING_PATH) return null;
 ---
 
 <div
@@ -14,7 +16,7 @@ if (Astro.url.pathname === "/booking") return null;
     <Button href={`sms:${business.phoneTel}`} variant="secondary" class="flex-1">
       Text
     </Button>
-    <Button href="/booking" variant="primary" class="flex-1">
+    <Button href={BOOKING_PATH} variant="primary" class="flex-1">
       Book now
     </Button>
   </div>

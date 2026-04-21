@@ -9,6 +9,7 @@ import Layout from "../layouts/Layout.astro";
 import Section from "../components/ui/Section.astro";
 import Button from "../components/ui/Button.astro";
 import { business } from "../content/business";
+import { BOOKING_PATH } from "../lib/routes";
 
 const title = "Book a session";
 const description =
@@ -23,11 +24,40 @@ const services = [
 ];
 
 const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:30 PM"];
+
+const defaultPricing = business.sessionPricing.find((p) => p.minutes === 90) ?? business.sessionPricing[0]!;
+const serviceSlugs = new Set(services.map((s) => s.slug));
+const q = Astro.url.searchParams;
+const parsedMinutes = Number(q.get("minutes"));
+const initialMinutes =
+  Number.isFinite(parsedMinutes) && business.sessionPricing.some((p) => p.minutes === parsedMinutes)
+    ? parsedMinutes
+    : defaultPricing.minutes;
+const initialLocation = q.get("location") === "studio" ? "studio" : "house";
+const qService = q.get("service");
+const initialService = qService && serviceSlugs.has(qService) ? qService : "therapeutic-massage";
+const summaryInitialPrice =
+  initialLocation === "house"
+    ? (business.sessionPricing.find((p) => p.minutes === initialMinutes) ?? defaultPricing).houseCallPrice
+    : (business.sessionPricing.find((p) => p.minutes === initialMinutes) ?? defaultPricing).studioPrice;
+const initialServiceName = services.find((s) => s.slug === initialService)?.name ?? "Therapeutic";
 ---
 
 <Layout title={title} description={description} path="/booking">
   <Section class="bg-gradient-to-b from-paper to-paper-soft" titleTag="h1">
     <div class="mx-auto max-w-5xl">
+      <div
+        id="booking-init"
+        class="hidden"
+        aria-hidden="true"
+        data-payload={JSON.stringify({
+          pricing: business.sessionPricing,
+          serviceMap: Object.fromEntries(services.map((s) => [s.slug, s.name])),
+          defaultPricing,
+          bookingPath: BOOKING_PATH,
+        })}
+      >
+      </div>
       <div data-booking-wizard-wrap>
       {/* Back link */}
       <a href="/" class="inline-flex items-center gap-1.5 text-sm text-ink/70 hover:text-ink" data-back>
@@ -59,12 +89,33 @@ const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:3
             {/* Location */}
             <fieldset>
               <legend class="text-xs font-semibold uppercase tracking-wide text-clay-deep">Where</legend>
-              <div class="mt-3 grid grid-cols-2 gap-3" data-group="location">
-                <button type="button" data-value="house" class="step-option rounded-xl border border-stone-200 bg-white p-4 text-left shadow-sm transition hover:border-stone-300 data-[active=true]:border-sage data-[active=true]:ring-1 data-[active=true]:ring-sage/40">
+              <div
+                class="mt-3 grid grid-cols-2 gap-3"
+                data-group="location"
+                role="radiogroup"
+                aria-label="Session location"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={initialLocation === "house" ? "true" : "false"}
+                  tabindex={initialLocation === "house" ? 0 : -1}
+                  data-value="house"
+                  class="step-option rounded-xl border border-stone-200 bg-white p-4 text-left shadow-sm transition hover:border-stone-300 data-[active=true]:border-sage data-[active=true]:ring-1 data-[active=true]:ring-sage/40"
+                  data-active={initialLocation === "house" ? "true" : "false"}
+                >
                   <p class="text-base font-semibold text-ink">Your place</p>
                   <p class="mt-1 text-xs text-ink/65">I drive to you · within {business.travel.radiusMiles} mi</p>
                 </button>
-                <button type="button" data-value="studio" class="step-option rounded-xl border border-stone-200 bg-white p-4 text-left shadow-sm transition hover:border-stone-300 data-[active=true]:border-sage data-[active=true]:ring-1 data-[active=true]:ring-sage/40">
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={initialLocation === "studio" ? "true" : "false"}
+                  tabindex={initialLocation === "studio" ? 0 : -1}
+                  data-value="studio"
+                  class="step-option rounded-xl border border-stone-200 bg-white p-4 text-left shadow-sm transition hover:border-stone-300 data-[active=true]:border-sage data-[active=true]:ring-1 data-[active=true]:ring-sage/40"
+                  data-active={initialLocation === "studio" ? "true" : "false"}
+                >
                   <p class="text-base font-semibold text-ink">Studio</p>
                   <p class="mt-1 text-xs text-ink/65">Private studio near downtown {business.city}</p>
                 </button>
@@ -74,20 +125,29 @@ const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:3
             {/* Minutes */}
             <fieldset>
               <legend class="text-xs font-semibold uppercase tracking-wide text-clay-deep">How long</legend>
-              <div class="mt-3 grid grid-cols-3 gap-3" data-group="minutes">
+              <div
+                class="mt-3 grid grid-cols-3 gap-3"
+                data-group="minutes"
+                role="radiogroup"
+                aria-label="Session length in minutes"
+              >
                 {
-                  business.sessionPricing.map((p, i) => (
+                  business.sessionPricing.map((p) => (
                     <button
                       type="button"
+                      role="radio"
+                      aria-checked={p.minutes === initialMinutes ? "true" : "false"}
+                      tabindex={p.minutes === initialMinutes ? 0 : -1}
                       data-value={p.minutes}
                       data-studio-price={p.studioPrice}
                       data-house-price={p.houseCallPrice}
                       class="step-option rounded-xl border border-stone-200 bg-white p-4 text-center shadow-sm transition hover:border-stone-300 data-[active=true]:border-sage data-[active=true]:ring-1 data-[active=true]:ring-sage/40"
+                      data-active={p.minutes === initialMinutes ? "true" : "false"}
                     >
                       <p class="text-3xl font-semibold leading-none tracking-tight text-ink">{p.minutes}</p>
                       <p class="mt-1 text-[10px] font-semibold uppercase tracking-wide text-ink/60">minutes</p>
                       <p class="mt-2 font-mono text-sm text-ink/70" data-dur-price>${p.houseCallPrice}</p>
-                      {i === 1 ? (
+                      {p.minutes === 90 ? (
                         <p class="mt-1.5 text-[10px] font-semibold uppercase tracking-wide text-sage">Most booked</p>
                       ) : null}
                     </button>
@@ -99,10 +159,23 @@ const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:3
             {/* Service */}
             <fieldset>
               <legend class="text-xs font-semibold uppercase tracking-wide text-clay-deep">Style</legend>
-              <div class="mt-3 grid gap-2 sm:grid-cols-2" data-group="service">
+              <div
+                class="mt-3 grid gap-2 sm:grid-cols-2"
+                data-group="service"
+                role="radiogroup"
+                aria-label="Massage style"
+              >
                 {
                   services.map((s) => (
-                    <button type="button" data-value={s.slug} class="step-option rounded-xl border border-stone-200 bg-white p-4 text-left shadow-sm transition hover:border-stone-300 data-[active=true]:border-sage data-[active=true]:ring-1 data-[active=true]:ring-sage/40">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={s.slug === initialService ? "true" : "false"}
+                      tabindex={s.slug === initialService ? 0 : -1}
+                      data-value={s.slug}
+                      class="step-option rounded-xl border border-stone-200 bg-white p-4 text-left shadow-sm transition hover:border-stone-300 data-[active=true]:border-sage data-[active=true]:ring-1 data-[active=true]:ring-sage/40"
+                      data-active={s.slug === initialService ? "true" : "false"}
+                    >
                       <p class="text-sm font-semibold text-ink">{s.name}</p>
                       <p class="mt-1 text-xs text-ink/65">{s.short}</p>
                     </button>
@@ -116,15 +189,33 @@ const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:3
           <div class="mt-8 hidden space-y-8" data-step="2">
             <div>
               <p class="text-xs font-semibold uppercase tracking-wide text-clay-deep">Pick a day</p>
-              <div class="mt-3 flex gap-2 overflow-x-auto pb-1" data-group="date" data-days-strip></div>
+              <div
+                class="mt-3 flex gap-2 overflow-x-auto pb-1"
+                data-group="date"
+                data-days-strip
+                role="radiogroup"
+                aria-label="Session day"
+              ></div>
             </div>
             <div>
               <p class="text-xs font-semibold uppercase tracking-wide text-clay-deep">Pick a time</p>
               <p class="mt-2 hidden text-sm italic text-ink/60" data-times-empty>Select a day first.</p>
-              <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3" data-group="time">
+              <div
+                class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3"
+                data-group="time"
+                role="radiogroup"
+                aria-label="Session time"
+              >
                 {
                   timeSlots.map((t) => (
-                    <button type="button" data-value={t} class="step-option rounded-xl border border-stone-200 bg-white p-3 text-center shadow-sm transition hover:border-stone-300 data-[active=true]:border-sage data-[active=true]:ring-1 data-[active=true]:ring-sage/40">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked="false"
+                      tabindex="-1"
+                      data-value={t}
+                      class="step-option rounded-xl border border-stone-200 bg-white p-3 text-center shadow-sm transition hover:border-stone-300 data-[active=true]:border-sage data-[active=true]:ring-1 data-[active=true]:ring-sage/40"
+                    >
                       <p class="font-mono text-sm text-ink">{t}</p>
                     </button>
                   ))
@@ -223,8 +314,12 @@ const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:3
         <aside class="lg:sticky lg:top-24">
           <div class="rounded-3xl border border-stone-200 bg-white p-6 shadow-card sm:p-8">
             <p class="text-xs font-semibold uppercase tracking-wide text-clay-deep">Your booking</p>
-            <h2 class="mt-2 text-xl font-semibold tracking-tight text-ink" data-summary-title>Therapeutic · 90 min</h2>
-            <p class="mt-0.5 text-sm text-ink/65" data-summary-location>House call</p>
+            <h2 class="mt-2 text-xl font-semibold tracking-tight text-ink" data-summary-title>
+              {initialServiceName} · {initialMinutes} min
+            </h2>
+            <p class="mt-0.5 text-sm text-ink/65" data-summary-location>
+              {initialLocation === "house" ? "House call" : "Studio session"}
+            </p>
 
             <dl class="mt-5 space-y-3 text-sm">
               <div class="flex items-baseline justify-between gap-4">
@@ -244,7 +339,7 @@ const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:3
             <div class="mt-5 space-y-2 border-t border-stone-200 pt-5 text-sm">
               <div class="flex items-baseline justify-between gap-4">
                 <span class="text-ink/70">Session</span>
-                <span class="font-mono tabular-nums text-ink" data-summary-price>$195</span>
+                <span class="font-mono tabular-nums text-ink" data-summary-price>${summaryInitialPrice}</span>
               </div>
               <div class="flex items-baseline justify-between gap-4">
                 <span class="text-ink/70">Travel (within {business.travel.radiusMiles} mi)</span>
@@ -253,7 +348,7 @@ const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:3
             </div>
             <div class="mt-4 flex items-baseline justify-between gap-4 border-t border-stone-200 pt-4">
               <span class="text-lg font-semibold tracking-tight text-ink">Total</span>
-              <span class="text-2xl font-semibold tracking-tight text-ink" data-summary-total>$195</span>
+              <span class="text-2xl font-semibold tracking-tight text-ink" data-summary-total>${summaryInitialPrice}</span>
             </div>
 
             <p class="mt-5 border-t border-stone-200 pt-5 text-xs leading-relaxed text-ink/60">
@@ -283,7 +378,7 @@ const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:3
           </p>
           <div class="mt-8 flex items-center justify-center gap-2">
             <Button href="/" variant="secondary">Back to home</Button>
-            <Button href="/booking" variant="primary">Book another</Button>
+            <Button href={BOOKING_PATH} variant="primary">Book another</Button>
           </div>
         </div>
       </div>
@@ -291,18 +386,37 @@ const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:3
   </Section>
 </Layout>
 
-<script is:inline define:vars={{ pricing: business.sessionPricing, serviceMap: Object.fromEntries(services.map((s) => [s.slug, s.name])) }}>
+<script is:inline>
   (function () {
     const $ = (sel, root = document) => root.querySelector(sel);
     const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
+    const initEl = document.getElementById("booking-init");
+    const payload = JSON.parse(initEl?.dataset.payload || "{}");
+    const pricing = payload.pricing || [];
+    const serviceMap = payload.serviceMap || {};
+    const defaultPricing = payload.defaultPricing || pricing[0];
+    const bookingPath = payload.bookingPath || "/booking";
+
+    function localDateKey(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
     // --- state ---
     const params = new URLSearchParams(location.search);
+    const parsedMinutes = Number(params.get("minutes"));
+    const minutes0 = pricing.some((p) => p.minutes === parsedMinutes) ? parsedMinutes : defaultPricing.minutes;
+    const qsService = params.get("service");
+    const service0 = qsService && typeof serviceMap[qsService] === "string" ? qsService : "therapeutic-massage";
+
     const state = {
       step: 1,
       location: params.get("location") === "studio" ? "studio" : "house",
-      minutes: Number(params.get("minutes")) || 90,
-      service: params.get("service") || "therapeutic-massage",
+      minutes: minutes0,
+      service: service0,
       date: "",
       time: "",
       name: "",
@@ -329,18 +443,41 @@ const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:3
 
     // --- helpers ---
     function priceFor() {
-      const row = pricing.find((p) => p.minutes === state.minutes) || pricing[1];
+      const row = pricing.find((p) => p.minutes === state.minutes) || defaultPricing;
       return state.location === "house" ? row.houseCallPrice : row.studioPrice;
     }
     function prettyDate(iso) {
       if (!iso) return "—";
-      const d = new Date(iso + "T00:00");
+      const parts = iso.split("-").map(Number);
+      if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return "—";
+      const d = new Date(parts[0], parts[1] - 1, parts[2]);
       return d.toLocaleString("en", { weekday: "short", month: "short", day: "numeric" });
     }
     function setActive(group, value) {
       $$(`[data-group="${group}"] .step-option`).forEach((b) => {
-        b.dataset.active = b.dataset.value === String(value) ? "true" : "false";
+        if (b.disabled) {
+          b.dataset.active = "false";
+          b.setAttribute("aria-checked", "false");
+          b.setAttribute("tabindex", "-1");
+          return;
+        }
+        const on = value !== "" && value !== undefined && b.dataset.value === String(value);
+        b.dataset.active = on ? "true" : "false";
+        b.setAttribute("aria-checked", on ? "true" : "false");
+        b.tabIndex = on ? 0 : -1;
       });
+    }
+
+    function focusAdjacentInGroup(groupKey, dir) {
+      const opts = $$(`[data-group="${groupKey}"] .step-option`).filter((b) => !b.disabled);
+      if (!opts.length) return;
+      let i = opts.indexOf(document.activeElement);
+      if (i < 0) {
+        const checked = opts.findIndex((b) => b.getAttribute("aria-checked") === "true");
+        i = checked >= 0 ? checked : 0;
+      }
+      const next = (i + dir + opts.length) % opts.length;
+      opts[next]?.focus();
     }
 
     // --- build day strip dynamically ---
@@ -351,10 +488,13 @@ const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:3
       for (let i = 0; i < 10; i++) {
         const d = new Date(now);
         d.setDate(now.getDate() + i);
-        const iso = d.toISOString().slice(0, 10);
+        const iso = localDateKey(d);
         const isSun = d.getDay() === 0;
         const btn = document.createElement("button");
         btn.type = "button";
+        btn.setAttribute("role", "radio");
+        btn.setAttribute("aria-checked", "false");
+        btn.tabIndex = -1;
         btn.className =
           "step-option shrink-0 w-16 rounded-xl border border-stone-200 bg-white p-3 text-center shadow-sm transition hover:border-stone-300 data-[active=true]:border-sage data-[active=true]:ring-1 data-[active=true]:ring-sage/40 disabled:opacity-30 disabled:cursor-not-allowed";
         btn.dataset.value = iso;
@@ -384,7 +524,8 @@ const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:3
       // step dots
       const dots = $$("[data-step-dots] > span");
       dots.forEach((dot, i) => {
-        dot.className = "h-1 rounded-full transition-all " +
+        dot.className =
+          "h-1 rounded-full transition-all " +
           (i === state.step - 1 ? "w-8 bg-sage" : i < state.step - 1 ? "w-1.5 bg-sage/60" : "w-1.5 bg-stone-300");
       });
 
@@ -429,6 +570,7 @@ const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:3
 
       // sync URL (non-destructive)
       const url = new URL(location.href);
+      url.pathname = bookingPath;
       url.searchParams.set("minutes", String(state.minutes));
       url.searchParams.set("location", state.location);
       url.searchParams.set("service", state.service);
@@ -457,6 +599,34 @@ const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:3
           state[key] = key === "minutes" ? Number(v) : v;
           setActive(key, v);
           render();
+        });
+
+        group.addEventListener("keydown", (e) => {
+          const keyEv = e.key;
+          if (keyEv === "ArrowRight" || keyEv === "ArrowDown") {
+            e.preventDefault();
+            focusAdjacentInGroup(key, 1);
+          } else if (keyEv === "ArrowLeft" || keyEv === "ArrowUp") {
+            e.preventDefault();
+            focusAdjacentInGroup(key, -1);
+          } else if (keyEv === "Home") {
+            e.preventDefault();
+            const first = $$(`[data-group="${key}"] .step-option`).find((b) => !b.disabled);
+            first?.focus();
+          } else if (keyEv === "End") {
+            e.preventDefault();
+            const opts = $$(`[data-group="${key}"] .step-option`).filter((b) => !b.disabled);
+            opts[opts.length - 1]?.focus();
+          } else if (keyEv === " " || keyEv === "Enter") {
+            const focused = document.activeElement;
+            if (focused && group.contains(focused) && focused.classList.contains("step-option") && !focused.disabled) {
+              e.preventDefault();
+              const v = focused.dataset.value;
+              state[key] = key === "minutes" ? Number(v) : v;
+              setActive(key, v);
+              render();
+            }
+          }
         });
       });
 
@@ -487,7 +657,7 @@ const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:3
           window.scrollTo({ top: 0, behavior: "smooth" });
           return;
         }
-        // submit
+        // Demo confirmation only — no booking API in this static site. Wire POST here when you add a scheduler/backend.
         $("[data-confirmed-email]").textContent = state.email || "your email";
         const wizardWrap = $("[data-booking-wizard-wrap]");
         if (wizardWrap) wizardWrap.classList.add("hidden");

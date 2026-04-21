@@ -6,11 +6,23 @@
 import Section from "../ui/Section.astro";
 import { business } from "../../content/business";
 
+const openHours = business.hours.filter((h) => !/closed/i.test(h.hours));
+const hoursValue = openHours.length > 0 ? openHours.map((h) => h.days).join(" · ") : "By appointment";
+const hoursHint =
+  openHours.length > 0
+    ? openHours.map((h) => `${h.days}: ${h.hours}`).join(" · ")
+    : business.hours.map((h) => `${h.days}: ${h.hours}`).join(" · ");
+
+const payPrimary = business.payments.methods.slice(0, 2).join(" · ");
+const payRest = business.payments.methods.slice(2).join(" · ");
+const paymentValue = payPrimary || "Ask at booking";
+const paymentHint = payRest || business.payments.depositNote;
+
 const items = [
   { label: "License", value: business.texasLicenseNumber.split(" ")[0], hint: "Texas LMT — verifiable with TDLR" },
   { label: "Therapist", value: business.therapistName.split(",")[0], hint: "One therapist, start to finish" },
-  { label: "Hours", value: "Tue–Sat", hint: "By appointment" },
-  { label: "Payment", value: "Card · HSA/FSA", hint: "Apple Pay & Google Pay" },
+  { label: "Hours", value: hoursValue, hint: hoursHint },
+  { label: "Payment", value: paymentValue, hint: paymentHint },
   { label: "Cancellation", value: "24 hours", hint: "Fair for both of us" },
   { label: "Travel", value: `${business.travel.radiusMiles} mi radius`, hint: "Included in house-call rate" },
 ];

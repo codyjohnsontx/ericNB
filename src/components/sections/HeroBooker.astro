@@ -6,15 +6,21 @@
 
 import Button from "../ui/Button.astro";
 import { business } from "../../content/business";
+import { BOOKING_PATH } from "../../lib/routes";
 
 const pricing = business.sessionPricing;
-const defaultIdx = 1; // 90 min
+const defaultPricing = pricing.find((p) => p.minutes === 90) ?? pricing[0]!;
+const defaultMinutes = defaultPricing.minutes;
+const mostBookedIndex = pricing.findIndex((p) => p.minutes === 90);
+const initialHouse = true;
+const initialPrice = initialHouse ? defaultPricing.houseCallPrice : defaultPricing.studioPrice;
 ---
 
 <div
   id="hero-booker"
   class="rounded-3xl border border-stone-200 bg-white p-6 shadow-card sm:p-8"
   data-prices={JSON.stringify(pricing)}
+  data-booking-path={BOOKING_PATH}
 >
   <p class="text-xs font-semibold uppercase tracking-wide text-clay-deep">Book a session</p>
   <h2 class="mt-2 text-xl font-semibold tracking-tight text-ink">Design your hour.</h2>
@@ -23,9 +29,17 @@ const defaultIdx = 1; // 90 min
   {/* Location */}
   <fieldset class="mt-6">
     <legend class="text-xs font-semibold uppercase tracking-wide text-clay-deep">Where</legend>
-    <div class="mt-3 grid grid-cols-2 gap-2" data-group="location">
+    <div
+      class="mt-3 grid grid-cols-2 gap-2"
+      data-group="location"
+      role="radiogroup"
+      aria-label="Session location"
+    >
       <button
         type="button"
+        role="radio"
+        aria-checked="true"
+        tabindex="0"
         data-value="house"
         class="booker-option rounded-xl border border-stone-200 bg-paper-soft p-3 text-left transition hover:border-stone-300 data-[active=true]:border-sage data-[active=true]:bg-white data-[active=true]:ring-1 data-[active=true]:ring-sage/50"
         data-active="true"
@@ -35,6 +49,9 @@ const defaultIdx = 1; // 90 min
       </button>
       <button
         type="button"
+        role="radio"
+        aria-checked="false"
+        tabindex="-1"
         data-value="studio"
         class="booker-option rounded-xl border border-stone-200 bg-paper-soft p-3 text-left transition hover:border-stone-300 data-[active=true]:border-sage data-[active=true]:bg-white data-[active=true]:ring-1 data-[active=true]:ring-sage/50"
       >
@@ -47,18 +64,26 @@ const defaultIdx = 1; // 90 min
   {/* Duration */}
   <fieldset class="mt-5">
     <legend class="text-xs font-semibold uppercase tracking-wide text-clay-deep">How long</legend>
-    <div class="mt-3 grid grid-cols-3 gap-2" data-group="minutes">
+    <div
+      class="mt-3 grid grid-cols-3 gap-2"
+      data-group="minutes"
+      role="radiogroup"
+      aria-label="Session length in minutes"
+    >
       {
         pricing.map((p, i) => (
           <button
             type="button"
+            role="radio"
+            aria-checked={p.minutes === defaultMinutes ? "true" : "false"}
+            tabindex={p.minutes === defaultMinutes ? 0 : -1}
             data-value={p.minutes}
             class="booker-option rounded-xl border border-stone-200 bg-paper-soft p-2.5 text-center transition hover:border-stone-300 data-[active=true]:border-sage data-[active=true]:bg-white data-[active=true]:ring-1 data-[active=true]:ring-sage/50"
-            data-active={i === defaultIdx ? "true" : "false"}
+            data-active={p.minutes === defaultMinutes ? "true" : "false"}
           >
             <p class="text-2xl font-semibold leading-none tracking-tight text-ink">{p.minutes}</p>
             <p class="mt-1 text-[10px] font-semibold uppercase tracking-wide text-ink/60">minutes</p>
-            {i === defaultIdx ? (
+            {mostBookedIndex >= 0 && i === mostBookedIndex ? (
               <p class="mt-1 text-[9px] font-semibold uppercase tracking-wide text-sage">Most booked</p>
             ) : null}
           </button>
@@ -70,7 +95,12 @@ const defaultIdx = 1; // 90 min
   {/* Style */}
   <fieldset class="mt-5">
     <legend class="text-xs font-semibold uppercase tracking-wide text-clay-deep">Style</legend>
-    <div class="mt-3 flex flex-wrap gap-1.5" data-group="service">
+    <div
+      class="mt-3 flex flex-wrap gap-1.5"
+      data-group="service"
+      role="radiogroup"
+      aria-label="Massage style"
+    >
       {
         [
           ["therapeutic-massage", "Therapeutic"],
@@ -81,6 +111,9 @@ const defaultIdx = 1; // 90 min
         ].map(([slug, label], i) => (
           <button
             type="button"
+            role="radio"
+            aria-checked={i === 0 ? "true" : "false"}
+            tabindex={i === 0 ? 0 : -1}
             data-value={slug}
             class="booker-option rounded-full border border-stone-200 bg-paper-soft px-3 py-1 text-xs font-semibold text-ink/80 transition hover:border-stone-300 data-[active=true]:border-transparent data-[active=true]:bg-sage data-[active=true]:text-white"
             data-active={i === 0 ? "true" : "false"}
@@ -97,11 +130,17 @@ const defaultIdx = 1; // 90 min
     <div>
       <p class="text-[11px] font-semibold uppercase tracking-wide text-clay-deep">Your session</p>
       <p class="mt-1 flex items-baseline gap-1.5">
-        <span class="text-3xl font-semibold tracking-tight text-ink" data-price>$195</span>
-        <span class="text-xs text-ink/60" data-summary>· 90 min · at your place</span>
+        <span class="text-3xl font-semibold tracking-tight text-ink" data-price>${initialPrice}</span>
+        <span class="text-xs text-ink/60" data-summary
+          >· {defaultMinutes} min · at your place</span
+        >
       </p>
     </div>
-    <Button href="/booking?minutes=90&location=house&service=therapeutic-massage" variant="primary" class="!px-5">
+    <Button
+      href={`${BOOKING_PATH}?minutes=${defaultMinutes}&location=house&service=therapeutic-massage`}
+      variant="primary"
+      class="!px-5"
+    >
       <span data-cta-label>Continue</span>
     </Button>
   </div>
@@ -112,24 +151,53 @@ const defaultIdx = 1; // 90 min
     const root = document.getElementById("hero-booker");
     if (!root) return;
 
+    const bookingPath = root.dataset.bookingPath || "/booking";
     const prices = JSON.parse(root.dataset.prices || "[]") as Array<{
       minutes: number;
       studioPrice: number;
       houseCallPrice: number;
     }>;
+    const defaultPricing = prices.find((p) => p.minutes === 90) ?? prices[0];
+    if (!defaultPricing) return;
 
     const state = {
       location: "house" as "house" | "studio",
-      minutes: 90,
+      minutes: defaultPricing.minutes,
       service: "therapeutic-massage",
     };
 
     const priceEl = root.querySelector("[data-price]") as HTMLElement;
     const summaryEl = root.querySelector("[data-summary]") as HTMLElement;
-    const ctaEl = root.querySelector('a[href*="/booking"]') as HTMLAnchorElement;
+    const ctaEl = root.querySelector(`a[href^="${bookingPath}"]`) as HTMLAnchorElement;
+
+    function syncRadios(group: HTMLElement, activeValue: string | number) {
+      const opts = Array.from(group.querySelectorAll<HTMLButtonElement>("button.booker-option"));
+      opts.forEach((btn) => {
+        const on = btn.dataset.value === String(activeValue);
+        btn.dataset.active = on ? "true" : "false";
+        btn.setAttribute("aria-checked", on ? "true" : "false");
+        btn.tabIndex = on ? 0 : -1;
+      });
+    }
+
+    function selectInGroup(group: HTMLElement, value: string | number, key: keyof typeof state) {
+      (state as any)[key] = key === "minutes" ? Number(value) : value;
+      syncRadios(group, value);
+      render();
+    }
+
+    function focusAdjacent(group: HTMLElement, dir: 1 | -1) {
+      const opts = Array.from(group.querySelectorAll<HTMLButtonElement>("button.booker-option")).filter(
+        (b) => !b.disabled,
+      );
+      const i = opts.indexOf(document.activeElement as HTMLButtonElement);
+      if (i < 0 || !opts.length) return;
+      const next = (i + dir + opts.length) % opts.length;
+      opts[next]?.focus();
+    }
 
     function render() {
-      const row = prices.find((p) => p.minutes === state.minutes) ?? prices[1];
+      const row = prices.find((p) => p.minutes === state.minutes) ?? defaultPricing;
       const price = state.location === "house" ? row.houseCallPrice : row.studioPrice;
       priceEl.textContent = `$${price}`;
       summaryEl.textContent = `· ${state.minutes} min · ${state.location === "house" ? "at your place" : "at the studio"}`;
@@ -138,21 +206,45 @@ const defaultIdx = 1; // 90 min
         location: state.location,
         service: state.service,
       });
-      ctaEl.href = `/booking?${params.toString()}`;
+      ctaEl.href = `${bookingPath}?${params.toString()}`;
     }
 
     root.querySelectorAll<HTMLElement>("[data-group]").forEach((group) => {
       const key = group.dataset.group as keyof typeof state;
+
       group.querySelectorAll<HTMLButtonElement>("button.booker-option").forEach((btn) => {
         btn.addEventListener("click", () => {
-          group.querySelectorAll<HTMLButtonElement>("button.booker-option").forEach((b) => {
-            b.dataset.active = "false";
-          });
-          btn.dataset.active = "true";
           const v = btn.dataset.value!;
-          (state as any)[key] = key === "minutes" ? Number(v) : v;
-          render();
+          selectInGroup(group, key === "minutes" ? Number(v) : v, key);
         });
+      });
+
+      group.addEventListener("keydown", (e) => {
+        const opts = Array.from(group.querySelectorAll<HTMLButtonElement>("button.booker-option")).filter(
+          (b) => !b.disabled,
+        );
+        if (!opts.length) return;
+        const keyEv = e.key;
+        if (keyEv === "ArrowRight" || keyEv === "ArrowDown") {
+          e.preventDefault();
+          focusAdjacent(group, 1);
+        } else if (keyEv === "ArrowLeft" || keyEv === "ArrowUp") {
+          e.preventDefault();
+          focusAdjacent(group, -1);
+        } else if (keyEv === " " || keyEv === "Enter") {
+          const focused = document.activeElement as HTMLButtonElement | null;
+          if (focused && group.contains(focused) && focused.classList.contains("booker-option")) {
+            e.preventDefault();
+            const v = focused.dataset.value!;
+            selectInGroup(group, key === "minutes" ? Number(v) : v, key);
+          }
+        } else if (keyEv === "Home") {
+          e.preventDefault();
+          opts[0]?.focus();
+        } else if (keyEv === "End") {
+          e.preventDefault();
+          opts[opts.length - 1]?.focus();
+        }
       });
     });
 

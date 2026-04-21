@@ -6,6 +6,7 @@
 import Button from "../ui/Button.astro";
 import HeroBooker from "./HeroBooker.astro";
 import { business } from "../../content/business";
+import { BOOKING_PATH } from "../../lib/routes";
 ---
 
 <section class="border-b border-stone-200 bg-gradient-to-b from-paper to-paper-soft">
@@ -14,7 +15,8 @@ import { business } from "../../content/business";
       <div>
         <p class="inline-flex items-center gap-2 rounded-full border border-sage/30 bg-sage/10 px-3 py-1 text-xs font-semibold text-sage-dark">
           <span class="h-1.5 w-1.5 rounded-full bg-sage"></span>
-          Booking same-week in {new Date().toLocaleString("default", { month: "long" })}
+          <span>Booking same-week in </span>
+          <span data-hero-same-week-month></span>
         </p>
         <h1 class="mt-5 text-4xl font-semibold tracking-tight text-ink sm:text-5xl lg:text-6xl">
           {business.hero.headline}
@@ -34,7 +36,7 @@ import { business } from "../../content/business";
           </li>
         </ul>
         <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Button href="/booking" variant="primary" class="sm:min-w-[200px]">Book online</Button>
+          <Button href={BOOKING_PATH} variant="primary" class="sm:min-w-[200px]">Book online</Button>
           <Button href={`tel:${business.phoneTel}`} variant="secondary" class="sm:min-w-[200px]">
             Text / Call {business.phoneDisplay}
           </Button>
@@ -46,3 +48,10 @@ import { business } from "../../content/business";
     </div>
   </div>
 </section>
+
+<script is:inline>
+  (function () {
+    const el = document.querySelector("[data-hero-same-week-month]");
+    if (el) el.textContent = new Date().toLocaleString("default", { month: "long" });
+  })();
+</script>
