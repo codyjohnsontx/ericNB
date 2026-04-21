@@ -3,8 +3,9 @@ import Layout from "../layouts/Layout.astro";
 import Section from "../components/ui/Section.astro";
 import Button from "../components/ui/Button.astro";
 import { business } from "../content/business";
+import { BOOKING_PATH } from "../lib/routes";
 
-const title = "Contact Comal River Bodywork";
+const title = "Contact CTX Massage";
 const description =
   "Call or text, email, review the New Braunfels service area, hours, and response expectations — plus a lightweight contact form stub.";
 ---
@@ -42,7 +43,7 @@ const description =
         </dl>
         <div class="mt-6 flex flex-col gap-3 sm:flex-row">
           <Button href={`sms:${business.phoneTel}`} variant="primary">Text the studio</Button>
-          <Button href={business.bookingUrl} variant="secondary" rel="noopener noreferrer" target="_blank">Book online</Button>
+          <Button href={BOOKING_PATH} variant="secondary">Book online</Button>
         </div>
       </div>
 
@@ -127,7 +128,7 @@ const description =
       <h2 class="text-2xl font-semibold tracking-tight text-ink">Ready to schedule?</h2>
       <p class="mt-3 text-sm leading-relaxed text-ink/75">If your question is mostly scheduling, booking online is usually fastest.</p>
       <div class="mt-6">
-        <Button href="/booking" variant="primary">Go to booking help</Button>
+        <Button href={BOOKING_PATH} variant="primary">Book online</Button>
       </div>
     </div>
   </Section>

@@ -1,12 +1,13 @@
 ---
 import Button from "../ui/Button.astro";
 import { business } from "../../content/business";
+import { BOOKING_PATH } from "../../lib/routes";
 
 const nav = [
   { href: "/services", label: "Services" },
   { href: "/pricing", label: "Pricing" },
   { href: "/about", label: "About" },
-  { href: "/booking", label: "Booking" },
+  { href: BOOKING_PATH, label: "Booking" },
   { href: "/testimonials", label: "Testimonials" },
   { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
@@ -39,7 +40,7 @@ const pathname = Astro.url.pathname;
           </a>
         ))
       }
-      <Button href={business.bookingUrl} variant="primary" class="ml-2" rel="noopener noreferrer" target="_blank">
+      <Button href={BOOKING_PATH} variant="primary" class="ml-2">
         Book now
       </Button>
     </nav>
@@ -48,7 +49,7 @@ const pathname = Astro.url.pathname;
       <Button href={`tel:${business.phoneTel}`} variant="secondary" class="px-3 py-2 text-xs">
         Call
       </Button>
-      <Button href={business.bookingUrl} variant="primary" class="px-3 py-2 text-xs" rel="noopener noreferrer" target="_blank">
+      <Button href={BOOKING_PATH} variant="primary" class="px-3 py-2 text-xs">
         Book
       </Button>
     </div>

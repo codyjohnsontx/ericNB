@@ -1,0 +1,7 @@
+# Cloudflare Workers static assets — used by CI `wrangler versions upload` after `npm run build`.
+# The `name` must match your Worker in the Cloudflare dashboard (this repo’s check used "ericmassage").
+name = "ericmassage"
+compatibility_date = "2025-11-01"
+
+[assets]
+directory = "dist"
