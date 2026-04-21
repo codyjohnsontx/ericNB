@@ -9,37 +9,41 @@ import Layout from "../layouts/Layout.astro";
 import Section from "../components/ui/Section.astro";
 import Button from "../components/ui/Button.astro";
 import { business } from "../content/business";
+import { services } from "../content/booking-wizard-services";
 import { BOOKING_PATH } from "../lib/routes";
 
 const title = "Book a session";
 const description =
   "Choose your session, pick a time, enter your details. Card is saved but not charged until after your session.";
 
-const services = [
-  { slug: "therapeutic-massage", name: "Therapeutic", short: "Medium to firm pressure on the knots that actually matter." },
-  { slug: "deep-tissue-massage", name: "Deep tissue", short: "Slower, deeper work through specific muscle layers." },
-  { slug: "relaxation-massage", name: "Relaxation", short: "Steady, flowing pressure. Nervous-system first." },
-  { slug: "prenatal-massage", name: "Prenatal", short: "Side-lying, supported. Second and third trimester." },
-  { slug: "sports-massage", name: "Sports recovery", short: "Before a race, day after a long effort, or mid-training." },
-];
-
 const timeSlots = ["10:00 AM", "11:30 AM", "1:00 PM", "2:30 PM", "4:00 PM", "5:30 PM"];
 
-const defaultPricing = business.sessionPricing.find((p) => p.minutes === 90) ?? business.sessionPricing[0]!;
-const serviceSlugs = new Set(services.map((s) => s.slug));
+/** Runtime guard — `business` uses `as const`, so TS sees a fixed-length tuple; widen for a safe empty check. */
+const pricingRows = business.sessionPricing as ReadonlyArray<{
+  minutes: number;
+  studioPrice: number;
+  houseCallPrice: number;
+}>;
+if (!Array.isArray(pricingRows) || pricingRows.length === 0) {
+  throw new Error(
+    "[booking.astro] business.sessionPricing must be a non-empty array. Add session rows in src/content/business.ts.",
+  );
+}
+const defaultPricing = pricingRows.find((p) => p.minutes === 90) ?? pricingRows[0];
+const serviceSlugs = new Set<string>(services.map((s) => s.slug));
 const q = Astro.url.searchParams;
 const parsedMinutes = Number(q.get("minutes"));
 const initialMinutes =
-  Number.isFinite(parsedMinutes) && business.sessionPricing.some((p) => p.minutes === parsedMinutes)
+  Number.isFinite(parsedMinutes) && pricingRows.some((p) => p.minutes === parsedMinutes)
     ? parsedMinutes
     : defaultPricing.minutes;
 const initialLocation = q.get("location") === "studio" ? "studio" : "house";
 const qService = q.get("service");
-const initialService = qService && serviceSlugs.has(qService) ? qService : "therapeutic-massage";
+const initialService = qService && serviceSlugs.has(qService) ? qService : services[0].slug;
 const summaryInitialPrice =
   initialLocation === "house"
-    ? (business.sessionPricing.find((p) => p.minutes === initialMinutes) ?? defaultPricing).houseCallPrice
-    : (business.sessionPricing.find((p) => p.minutes === initialMinutes) ?? defaultPricing).studioPrice;
+    ? (pricingRows.find((p) => p.minutes === initialMinutes) ?? defaultPricing).houseCallPrice
+    : (pricingRows.find((p) => p.minutes === initialMinutes) ?? defaultPricing).studioPrice;
 const initialServiceName = services.find((s) => s.slug === initialService)?.name ?? "Therapeutic";
 ---
 
@@ -51,7 +55,7 @@ const initialServiceName = services.find((s) => s.slug === initialService)?.name
         class="hidden"
         aria-hidden="true"
         data-payload={JSON.stringify({
-          pricing: business.sessionPricing,
+          pricing: pricingRows,
           serviceMap: Object.fromEntries(services.map((s) => [s.slug, s.name])),
           defaultPricing,
           bookingPath: BOOKING_PATH,
@@ -132,7 +136,7 @@ const initialServiceName = services.find((s) => s.slug === initialService)?.name
                 aria-label="Session length in minutes"
               >
                 {
-                  business.sessionPricing.map((p) => (
+                  pricingRows.map((p) => (
                     <button
                       type="button"
                       role="radio"
@@ -369,12 +373,19 @@ const initialServiceName = services.find((s) => s.slug === initialService)?.name
       {/* CONFIRMED — hidden until submit */}
       <div class="mt-10 hidden" data-confirmed>
         <div class="mx-auto max-w-xl rounded-3xl border border-stone-200 bg-white p-10 text-center shadow-card">
-          <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-sage/10 text-2xl text-sage">✓</div>
-          <p class="mt-5 text-xs font-semibold uppercase tracking-wide text-clay-deep">Confirmation sent</p>
-          <h2 class="mt-2 text-3xl font-semibold tracking-tight text-ink">Your hour is held.</h2>
+          <p
+            class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium leading-relaxed text-ink/85"
+            role="status"
+          >
+            This is a demo — no booking has been made. No reservation or payment was submitted; connect a scheduler or
+            API to go live.
+          </p>
+          <div class="mx-auto mt-6 flex h-14 w-14 items-center justify-center rounded-full bg-sage/10 text-2xl text-sage">✓</div>
+          <p class="mt-5 text-xs font-semibold uppercase tracking-wide text-clay-deep">Flow complete (demo)</p>
+          <h2 class="mt-2 text-3xl font-semibold tracking-tight text-ink">Review finished.</h2>
           <p class="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-ink/70">
-            A confirmation is on its way to <span class="text-ink" data-confirmed-email>your email</span>.
-            I'll text the day before with arrival notes.
+            If this were live, a confirmation would go to <span class="text-ink" data-confirmed-email>your email</span>.
+            For now, nothing was saved on a server.
           </p>
           <div class="mt-8 flex items-center justify-center gap-2">
             <Button href="/" variant="secondary">Back to home</Button>

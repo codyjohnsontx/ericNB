@@ -6,12 +6,24 @@
 
 import Button from "../ui/Button.astro";
 import { business } from "../../content/business";
+import { services } from "../../content/booking-wizard-services";
 import { BOOKING_PATH } from "../../lib/routes";
 
-const pricing = business.sessionPricing;
-const defaultPricing = pricing.find((p) => p.minutes === 90) ?? pricing[0]!;
+/** Runtime guard — `business` uses `as const`, so TS sees a fixed-length tuple; widen for a safe empty check. */
+const pricing = business.sessionPricing as ReadonlyArray<{
+  minutes: number;
+  studioPrice: number;
+  houseCallPrice: number;
+}>;
+if (!Array.isArray(pricing) || pricing.length === 0) {
+  throw new Error(
+    "[HeroBooker] business.sessionPricing must be a non-empty array. Add session rows in src/content/business.ts.",
+  );
+}
+const defaultPricing = pricing.find((p) => p.minutes === 90) ?? pricing[0];
 const defaultMinutes = defaultPricing.minutes;
 const mostBookedIndex = pricing.findIndex((p) => p.minutes === 90);
+const defaultServiceSlug = services[0].slug;
 const initialHouse = true;
 const initialPrice = initialHouse ? defaultPricing.houseCallPrice : defaultPricing.studioPrice;
 ---
@@ -21,6 +33,7 @@ const initialPrice = initialHouse ? defaultPricing.houseCallPrice : defaultPrici
   class="rounded-3xl border border-stone-200 bg-white p-6 shadow-card sm:p-8"
   data-prices={JSON.stringify(pricing)}
   data-booking-path={BOOKING_PATH}
+  data-default-service={defaultServiceSlug}
 >
   <p class="text-xs font-semibold uppercase tracking-wide text-clay-deep">Book a session</p>
   <h2 class="mt-2 text-xl font-semibold tracking-tight text-ink">Design your hour.</h2>
@@ -102,23 +115,17 @@ const initialPrice = initialHouse ? defaultPricing.houseCallPrice : defaultPrici
       aria-label="Massage style"
     >
       {
-        [
-          ["therapeutic-massage", "Therapeutic"],
-          ["deep-tissue-massage", "Deep tissue"],
-          ["relaxation-massage", "Relaxation"],
-          ["prenatal-massage", "Prenatal"],
-          ["sports-massage", "Sports"],
-        ].map(([slug, label], i) => (
+        services.map((s) => (
           <button
             type="button"
             role="radio"
-            aria-checked={i === 0 ? "true" : "false"}
-            tabindex={i === 0 ? 0 : -1}
-            data-value={slug}
+            aria-checked={s.slug === defaultServiceSlug ? "true" : "false"}
+            tabindex={s.slug === defaultServiceSlug ? 0 : -1}
+            data-value={s.slug}
             class="booker-option rounded-full border border-stone-200 bg-paper-soft px-3 py-1 text-xs font-semibold text-ink/80 transition hover:border-stone-300 data-[active=true]:border-transparent data-[active=true]:bg-sage data-[active=true]:text-white"
-            data-active={i === 0 ? "true" : "false"}
+            data-active={s.slug === defaultServiceSlug ? "true" : "false"}
           >
-            {label}
+            {s.name}
           </button>
         ))
       }
@@ -137,7 +144,7 @@ const initialPrice = initialHouse ? defaultPricing.houseCallPrice : defaultPrici
       </p>
     </div>
     <Button
-      href={`${BOOKING_PATH}?minutes=${defaultMinutes}&location=house&service=therapeutic-massage`}
+      href={`${BOOKING_PATH}?minutes=${defaultMinutes}&location=house&service=${defaultServiceSlug}`}
       variant="primary"
       class="!px-5"
     >
@@ -152,18 +159,23 @@ const initialPrice = initialHouse ? defaultPricing.houseCallPrice : defaultPrici
     if (!root) return;
 
     const bookingPath = root.dataset.bookingPath || "/booking";
+    const defaultService = root.dataset.defaultService || "therapeutic-massage";
     const prices = JSON.parse(root.dataset.prices || "[]") as Array<{
       minutes: number;
       studioPrice: number;
       houseCallPrice: number;
     }>;
+    if (!Array.isArray(prices) || prices.length === 0) {
+      console.error("[HeroBooker] session pricing payload is empty.");
+      return;
+    }
     const defaultPricing = prices.find((p) => p.minutes === 90) ?? prices[0];
     if (!defaultPricing) return;
 
     const state = {
       location: "house" as "house" | "studio",
       minutes: defaultPricing.minutes,
-      service: "therapeutic-massage",
+      service: defaultService,
     };
 
     const priceEl = root.querySelector("[data-price]") as HTMLElement;
