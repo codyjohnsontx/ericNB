@@ -39,7 +39,7 @@ const pathname = Astro.url.pathname;
           </a>
         ))
       }
-      <Button href={business.bookingUrl} variant="primary" class="ml-2" rel="noopener noreferrer" target="_blank">
+      <Button href="/booking" variant="primary" class="ml-2">
         Book now
       </Button>
     </nav>
@@ -48,7 +48,7 @@ const pathname = Astro.url.pathname;
       <Button href={`tel:${business.phoneTel}`} variant="secondary" class="px-3 py-2 text-xs">
         Call
       </Button>
-      <Button href={business.bookingUrl} variant="primary" class="px-3 py-2 text-xs" rel="noopener noreferrer" target="_blank">
+      <Button href="/booking" variant="primary" class="px-3 py-2 text-xs">
         Book
       </Button>
     </div>

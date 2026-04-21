@@ -36,7 +36,7 @@ function houseCallText() {
   >
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex flex-col gap-3 sm:flex-row">
-        <Button href={business.bookingUrl} variant="primary" rel="noopener noreferrer" target="_blank">Book this service</Button>
+        <Button href={`/booking?service=${service.slug}`} variant="primary">Book this service</Button>
         <Button href={`tel:${business.phoneTel}`} variant="secondary">Text / Call</Button>
       </div>
       <p class="text-sm text-ink/65">
@@ -110,8 +110,8 @@ function houseCallText() {
         Choose this session type in your booking flow, then select studio or house call depending on what you need that day.
       </p>
       <div class="mt-6 flex flex-col gap-3 sm:flex-row">
-        <Button href={business.bookingUrl} variant="primary" rel="noopener noreferrer" target="_blank">Open booking</Button>
-        <Button href="/booking" variant="ghost">Booking FAQs & prep</Button>
+        <Button href={`/booking?service=${service.slug}`} variant="primary">Open booking</Button>
+        <Button href="/faq" variant="ghost">Booking FAQs & prep</Button>
       </div>
     </div>
   </Section>
