@@ -199,14 +199,18 @@ const initialPrice = initialHouse ? defaultPricing.houseCallPrice : defaultPrici
       render();
     }
 
-    function focusAdjacent(group: HTMLElement, dir: 1 | -1) {
+    function focusAdjacent(group: HTMLElement, stateKey: keyof typeof state, dir: 1 | -1) {
       const opts = Array.from(group.querySelectorAll<HTMLButtonElement>("button.booker-option")).filter(
         (b) => !b.disabled,
       );
       const i = opts.indexOf(document.activeElement as HTMLButtonElement);
       if (i < 0 || !opts.length) return;
       const next = (i + dir + opts.length) % opts.length;
-      opts[next]?.focus();
+      const btn = opts[next];
+      if (!btn) return;
+      const v = btn.dataset.value!;
+      selectInGroup(group, stateKey === "minutes" ? Number(v) : v, stateKey);
+      btn.focus();
     }
 
     function render() {
@@ -240,10 +244,10 @@ const initialPrice = initialHouse ? defaultPricing.houseCallPrice : defaultPrici
         const keyEv = e.key;
         if (keyEv === "ArrowRight" || keyEv === "ArrowDown") {
           e.preventDefault();
-          focusAdjacent(group, 1);
+          focusAdjacent(group, key, 1);
         } else if (keyEv === "ArrowLeft" || keyEv === "ArrowUp") {
           e.preventDefault();
-          focusAdjacent(group, -1);
+          focusAdjacent(group, key, -1);
         } else if (keyEv === " " || keyEv === "Enter") {
           const focused = document.activeElement as HTMLButtonElement | null;
           if (focused && group.contains(focused) && focused.classList.contains("booker-option")) {
@@ -253,10 +257,20 @@ const initialPrice = initialHouse ? defaultPricing.houseCallPrice : defaultPrici
           }
         } else if (keyEv === "Home") {
           e.preventDefault();
-          opts[0]?.focus();
+          const first = opts[0];
+          if (first) {
+            const v = first.dataset.value!;
+            selectInGroup(group, key === "minutes" ? Number(v) : v, key);
+            first.focus();
+          }
         } else if (keyEv === "End") {
           e.preventDefault();
-          opts[opts.length - 1]?.focus();
+          const last = opts[opts.length - 1];
+          if (last) {
+            const v = last.dataset.value!;
+            selectInGroup(group, key === "minutes" ? Number(v) : v, key);
+            last.focus();
+          }
         }
       });
     });

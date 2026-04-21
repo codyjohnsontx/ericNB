@@ -60,6 +60,10 @@ const initialServiceName = services.find((s) => s.slug === initialService)?.name
           defaultPricing,
           defaultServiceSlug: services[0].slug,
           bookingPath: BOOKING_PATH,
+          bookingApiUrl:
+            typeof import.meta.env.PUBLIC_BOOKING_API_URL === "string"
+              ? import.meta.env.PUBLIC_BOOKING_API_URL
+              : "",
         })}
       >
       </div>
@@ -307,6 +311,22 @@ const initialServiceName = services.find((s) => s.slug === initialService)?.name
           </div>
 
           {/* Nav */}
+          <div
+            class="mt-8 hidden rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-ink/90 outline-none"
+            data-booking-confirm-blocked
+            role="alert"
+            tabindex="-1"
+          >
+            <strong class="font-semibold text-ink">No live booking endpoint.</strong> Set{" "}
+            <code class="rounded bg-white/80 px-1 py-0.5 text-xs">PUBLIC_BOOKING_API_URL</code> to enable POST
+            confirmation. Until then, this button cannot reserve a slot (demo only).
+          </div>
+          <div
+            class="mt-4 hidden rounded-2xl border border-red-200 bg-red-50 p-4 text-sm leading-relaxed text-ink/90 outline-none"
+            data-booking-api-error
+            role="alert"
+            tabindex="-1"
+          ></div>
           <div class="mt-8 flex items-center justify-between gap-3">
             <p class="text-xs text-ink/55" data-helper>
               Pressure, pace, focus — we'll fine-tune in person.
@@ -409,6 +429,7 @@ const initialServiceName = services.find((s) => s.slug === initialService)?.name
     const serviceMap = payload.serviceMap || {};
     const defaultPricing = payload.defaultPricing || pricing[0];
     const bookingPath = payload.bookingPath || "/booking";
+    const bookingApiUrl = String(payload.bookingApiUrl || "").trim();
 
     function localDateKey(d) {
       const y = d.getFullYear();
@@ -483,6 +504,23 @@ const initialServiceName = services.find((s) => s.slug === initialService)?.name
       });
     }
 
+    function clearBookingAlerts() {
+      $("[data-booking-confirm-blocked]")?.classList.add("hidden");
+      const errEl = $("[data-booking-api-error]");
+      if (errEl) {
+        errEl.classList.add("hidden");
+        errEl.textContent = "";
+      }
+    }
+
+    function selectOptionFromButton(groupKey, btn) {
+      if (!btn || btn.disabled) return;
+      const v = btn.dataset.value;
+      state[groupKey] = groupKey === "minutes" ? Number(v) : v;
+      setActive(groupKey, v);
+      render();
+    }
+
     function focusAdjacentInGroup(groupKey, dir) {
       const opts = $$(`[data-group="${groupKey}"] .step-option`).filter((b) => !b.disabled);
       if (!opts.length) return;
@@ -492,7 +530,10 @@ const initialServiceName = services.find((s) => s.slug === initialService)?.name
         i = checked >= 0 ? checked : 0;
       }
       const next = (i + dir + opts.length) % opts.length;
-      opts[next]?.focus();
+      const btn = opts[next];
+      if (!btn) return;
+      selectOptionFromButton(groupKey, btn);
+      btn.focus();
     }
 
     // --- build day strip dynamically ---
@@ -610,10 +651,7 @@ const initialServiceName = services.find((s) => s.slug === initialService)?.name
         group.addEventListener("click", (e) => {
           const btn = e.target.closest(".step-option");
           if (!btn || btn.disabled) return;
-          const v = btn.dataset.value;
-          state[key] = key === "minutes" ? Number(v) : v;
-          setActive(key, v);
-          render();
+          selectOptionFromButton(key, btn);
         });
 
         group.addEventListener("keydown", (e) => {
@@ -627,19 +665,23 @@ const initialServiceName = services.find((s) => s.slug === initialService)?.name
           } else if (keyEv === "Home") {
             e.preventDefault();
             const first = $$(`[data-group="${key}"] .step-option`).find((b) => !b.disabled);
-            first?.focus();
+            if (first) {
+              selectOptionFromButton(key, first);
+              first.focus();
+            }
           } else if (keyEv === "End") {
             e.preventDefault();
             const opts = $$(`[data-group="${key}"] .step-option`).filter((b) => !b.disabled);
-            opts[opts.length - 1]?.focus();
+            const last = opts[opts.length - 1];
+            if (last) {
+              selectOptionFromButton(key, last);
+              last.focus();
+            }
           } else if (keyEv === " " || keyEv === "Enter") {
             const focused = document.activeElement;
             if (focused && group.contains(focused) && focused.classList.contains("step-option") && !focused.disabled) {
               e.preventDefault();
-              const v = focused.dataset.value;
-              state[key] = key === "minutes" ? Number(v) : v;
-              setActive(key, v);
-              render();
+              selectOptionFromButton(key, focused);
             }
           }
         });
@@ -657,7 +699,7 @@ const initialServiceName = services.find((s) => s.slug === initialService)?.name
       // next
       const nextBtn = $("[data-next-label]").closest("a, button");
       // Button.astro renders <button> when no href — force button behavior
-      nextBtn.addEventListener("click", (e) => {
+      nextBtn.addEventListener("click", async (e) => {
         e.preventDefault();
         if (!canAdvance()) {
           nextBtn.animate(
@@ -667,16 +709,59 @@ const initialServiceName = services.find((s) => s.slug === initialService)?.name
           return;
         }
         if (state.step < 4) {
+          clearBookingAlerts();
           state.step += 1;
           render();
           window.scrollTo({ top: 0, behavior: "smooth" });
           return;
         }
-        // Demo confirmation only — no booking API in this static site. Wire POST here when you add a scheduler/backend.
-        $("[data-confirmed-email]").textContent = state.email || "your email";
-        const wizardWrap = $("[data-booking-wizard-wrap]");
-        if (wizardWrap) wizardWrap.classList.add("hidden");
-        $("[data-confirmed]").classList.remove("hidden");
+        clearBookingAlerts();
+        if (!bookingApiUrl) {
+          const blocked = $("[data-booking-confirm-blocked]");
+          blocked?.classList.remove("hidden");
+          blocked?.focus();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+        const errEl = $("[data-booking-api-error]");
+        nextBtn.disabled = true;
+        try {
+          const res = await fetch(bookingApiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              location: state.location,
+              minutes: state.minutes,
+              service: state.service,
+              date: state.date,
+              time: state.time,
+              name: state.name,
+              phone: state.phone,
+              email: state.email,
+              address: state.address,
+              notes: state.notes,
+            }),
+          });
+          if (!res.ok) {
+            const msg = (await res.text().catch(() => "")) || res.statusText || "Request failed";
+            throw new Error(msg);
+          }
+          $("[data-confirmed-email]").textContent = state.email || "your email";
+          const wizardWrap = $("[data-booking-wizard-wrap]");
+          if (wizardWrap) wizardWrap.classList.add("hidden");
+          $("[data-confirmed]").classList.remove("hidden");
+        } catch (err) {
+          if (errEl) {
+            const msg = err instanceof Error ? err.message : String(err);
+            errEl.textContent = msg
+              ? "Booking could not be completed: " + msg
+              : "Booking could not be completed. Check the endpoint and try again.";
+            errEl.classList.remove("hidden");
+            errEl.focus();
+          }
+        } finally {
+          nextBtn.disabled = false;
+        }
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
 
@@ -684,6 +769,7 @@ const initialServiceName = services.find((s) => s.slug === initialService)?.name
       $("[data-back]").addEventListener("click", (e) => {
         if (state.step === 1) return; // let link to "/" work
         e.preventDefault();
+        clearBookingAlerts();
         state.step -= 1;
         render();
         window.scrollTo({ top: 0, behavior: "smooth" });
