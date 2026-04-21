@@ -20,6 +20,12 @@ if (!Array.isArray(pricing) || pricing.length === 0) {
     "[HeroBooker] business.sessionPricing must be a non-empty array. Add session rows in src/content/business.ts.",
   );
 }
+const servicesArr = services as unknown as readonly unknown[];
+if (!Array.isArray(servicesArr) || servicesArr.length === 0) {
+  throw new Error(
+    "[HeroBooker] services must be a non-empty array. Add service rows in src/content/booking-wizard-services.ts.",
+  );
+}
 const defaultPricing = pricing.find((p) => p.minutes === 90) ?? pricing[0];
 const defaultMinutes = defaultPricing.minutes;
 const mostBookedIndex = pricing.findIndex((p) => p.minutes === 90);
