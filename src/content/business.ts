@@ -4,13 +4,13 @@
  */
 
 export const business = {
-  businessName: "Comal River Bodywork",
+  businessName: "CTX Massage",
   therapistName: "Eric Uran, LMT",
   tagline: "Therapeutic massage in New Braunfels — private sessions and house calls.",
   texasLicenseNumber: "MT###### (placeholder — add your Texas massage therapy license)",
   phoneDisplay: "(830) 555-0142",
   phoneTel: "+18305550142",
-  email: "hello@comalriverbodywork.example",
+  email: "hello@ctxmassage.example",
   city: "New Braunfels",
   state: "TX",
   streetAddress: "Private studio near downtown New Braunfels (exact address shared after booking)",
@@ -71,7 +71,7 @@ export const business = {
   },
   aboutPage: {
     bioExtended: [
-      "I started Comal River Bodywork to offer something simple: skilled massage therapy with clear expectations, respectful communication, and flexible options for busy people and parents.",
+      "I started CTX Massage to offer something simple: skilled massage therapy with clear expectations, respectful communication, and flexible options for busy people and parents.",
       "Before moving to New Braunfels, I worked in clinical-adjacent and spa settings. I liked pieces of both worlds — the structure of therapeutic work and the calm pacing of relaxation massage — but I wanted a more local, personal practice with fewer surprises at checkout.",
       "Today, I see clients in a private studio near downtown New Braunfels and offer house calls when it is a good fit for your space and schedule.",
     ],
@@ -104,9 +104,9 @@ export const business = {
     { minutes: 120, studioPrice: 205, houseCallPrice: 235 },
   ],
   seo: {
-    defaultTitle: "Comal River Bodywork | Massage Therapy in New Braunfels, TX",
+    defaultTitle: "CTX Massage | Massage Therapy in New Braunfels, TX",
     defaultDescription:
-      "Licensed massage therapist in New Braunfels offering therapeutic massage, deep tissue, prenatal, sports, and relaxation sessions — private studio and house calls with transparent pricing and online booking.",
+      "CTX Massage — licensed massage therapy in New Braunfels: therapeutic, deep tissue, prenatal, sports, and relaxation sessions. Private studio and house calls with transparent pricing and online booking.",
   },
 } as const;
 
