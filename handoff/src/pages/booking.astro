@@ -58,6 +58,7 @@ const initialServiceName = services.find((s) => s.slug === initialService)?.name
           pricing: pricingRows,
           serviceMap: Object.fromEntries(services.map((s) => [s.slug, s.name])),
           defaultPricing,
+          defaultServiceSlug: services[0].slug,
           bookingPath: BOOKING_PATH,
         })}
       >
@@ -421,7 +422,10 @@ const initialServiceName = services.find((s) => s.slug === initialService)?.name
     const parsedMinutes = Number(params.get("minutes"));
     const minutes0 = pricing.some((p) => p.minutes === parsedMinutes) ? parsedMinutes : defaultPricing.minutes;
     const qsService = params.get("service");
-    const service0 = qsService && typeof serviceMap[qsService] === "string" ? qsService : "therapeutic-massage";
+    const defaultServiceSlug =
+      payload.defaultServiceSlug || Object.keys(serviceMap)[0] || "therapeutic-massage";
+    const service0 =
+      qsService && typeof serviceMap[qsService] === "string" ? qsService : defaultServiceSlug;
 
     const state = {
       step: 1,
